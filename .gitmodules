@@ -1,0 +1,9 @@
+[submodule "deepgometa"]
+	path = vendor/deepgometa
+	url = https://github.com/bio-ontology-research-group/deepgometa
+[submodule "deepgo2"]
+	path = vendor/deepgo2
+	url = https://github.com/bio-ontology-research-group/deepgo2
+[submodule "domain-pfp"]
+	path = vendor/domain-pfp
+	url = https://github.com/kiharalab/Domain-PFP
