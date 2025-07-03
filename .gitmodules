@@ -10,3 +10,9 @@
 [submodule "funfams"]
 	path = vendor/funfams
 	url = https://github.com/UCLOrengoGroup/cath-tools-genomescan
+[submodule "po2go"]
+	path = vendor/po2go
+	url = https://github.com/xbiome/protein-annotation
+[submodule "msrep"]
+	path = vendor/msrep
+	url = https://github.com/luo-group/MSRep

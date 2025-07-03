@@ -1,3 +1,6 @@
+# FILES FOR PO2GO need TO BE ADDED MANUALLY
+# https://drive.google.com/drive/folders/1P4ExHz0iFCXq5kwRqmAG8XXNZAvoQcX5
+
 # model downloads from KAUST are very slow, might take long time
 mkdir -p data
 
@@ -19,6 +22,14 @@ python download_eggnog_data.py --data_dir data
 wget http://download.cathdb.info/cath/releases/all-releases/v4_3_0/sequence-data/funfam-hmm3-v4_3_0.lib.gz
 # extract to data directory
 gunzip -c funfam-hmm3-v4_3_0.lib.gz > data/funfam-hmm3-v4_3_0.lib 
+# check and move hmmsearch to a proper place
+HMMSEARCH_PATH=$(which hmmsearch)
+mkdir -p vendor/funfams/bin/hmmer3
+if [ -z "$HMMSEARCH_PATH" ]; then
+    echo "hmmsearch not found in PATH. Please install hmmer3 and add it to PATH."
+else
+    cp $HMMSEARCH_PATH vendor/funfams/bin/hmmer3/
+fi
 
 # download domain-pfp data
 mkdir -p vendor/domain-pfp/data

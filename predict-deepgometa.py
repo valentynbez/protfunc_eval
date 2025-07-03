@@ -1,69 +1,106 @@
-# predict DeepGO2 and DeepGOMeta
-import os
-import sys
+#!/usr/bin/env python3
+
+import subprocess
+from pathlib import Path
 from glob import glob
 
-input_file = "/nfs/cds-peta/exports/biol_micro_cds_gr_sunagawa/scratch/vbezshapkin/protfunc_eval/vendor/deepgo2/data/example.fa"
-output_folder = "predictions"
-diamond_path = "/nfs/home/vbezshapkin/palm_annot/bin/diamond"
+# Paths
+input_file = Path(
+    "/nfs/cds-peta/exports/biol_micro_cds_gr_sunagawa/scratch/vbezshapkin/protfunc_eval/vendor/deepgo2/data/example.fa"
+).resolve()
+output_folder = Path("predictions")
+diamond_path = Path("/nfs/home/vbezshapkin/palm_annot/bin/diamond").resolve()
+
+# Ensure output folder exists
+output_folder.mkdir(parents=True, exist_ok=True)
 
 
-input_file = os.path.abspath(input_file)
-# Create output folder if it does not exist
-if not os.path.exists(output_folder):
-    os.makedirs(output_folder)
+def run_command(cmd, cwd=None):
+    """Run a shell command and handle errors."""
+    print(f"[RUNNING] {cmd}")
+    try:
+        subprocess.run(cmd, shell=True, check=True, cwd=cwd)
+    except subprocess.CalledProcessError as e:
+        print(f"[ERROR] Command failed: {e}", file=sys.stderr)
 
-################### DeepGO ####################
-print("Running DeepGO predictions...")
-# Paths to prediction scripts and models
-deepgos = {
+
+def cleanup_file(file_path):
+    """Delete a file if it exists."""
+    if file_path.exists():
+        print(f"[CLEANUP] Removing {file_path}")
+        file_path.unlink()
+
+
+def move_prediction_files(source_dir, tool_name):
+    """Move prediction files to output folder with tool prefix."""
+    for pred_file in glob(str(source_dir / "*preds*")):
+        src = Path(pred_file)
+        dest = output_folder / f"{tool_name}_{src.name}"
+        print(f"[MOVE] {src} -> {dest}")
+        src.rename(dest)
+
+
+# ----------------- DeepGO Section -----------------
+print("\n[STEP] Running DeepGO predictions...")
+
+deepgo_tools = {
     "deepgo2": {
-        "script": "vendor/deepgo2/predict.py",
-        "model": "vendor/deepgo2/data"
+        "script": Path("vendor/deepgo2/predict.py"),
+        "model": Path("vendor/deepgo2/data"),
     },
     # "deepgometa": {
-    #     "script": "vendor/deepgometa/predict.py",
-    #     "model": "vendor/deepgometa/data"
-    # }
+    #     "script": Path("vendor/deepgometa/predict.py"),
+    #     "model": Path("vendor/deepgometa/data"),
+    # },
 }
 
-# DeepGO prediction command
-for name, config in deepgos.items():
-    script = config["script"]
-    model = config["model"]
-    cmd = (
-        f"python3 {script} "
-        f"--data-root {model} "
-        f"-if {input_file}"
-    )
+for name, config in deepgo_tools.items():
+    script, model = config["script"], config["model"]
 
-    if os.path.exists(script) and os.path.exists(model):
-        os.system(cmd)
+    if not (script.exists() and model.exists()):
+        print(f"[WARNING] Skipping {name}: Missing script or model.")
+        continue
 
-    # remove esm file in input folder
-    esm_file = os.path.join(os.path.dirname(input_file), "example_esm.pkl")
-    if os.path.exists(esm_file):
-        os.remove(esm_file)
+    cmd = f"python3 {script} --data-root {model} -if {input_file}"
+    run_command(cmd)
 
-    preds = glob(os.path.join(os.path.dirname(input_file), "*preds*"))
-    for pred_file in preds:
-        if os.path.exists(pred_file):
-            # add name with _ to prediction file
-            new_pred_file = os.path.join(output_folder, f"{name}_{os.path.basename(pred_file)}")
-            os.rename(pred_file, new_pred_file)
+    # Cleanup intermediate ESM file
+    cleanup_file(input_file.parent / "example_esm.pkl")
 
+    # Move predictions to output folder
+    move_prediction_files(input_file.parent, name)
 
-######### Domain-PFP ################
-print("Running Domain-PFP predictions...")
-# only possible to run in the domain-pfp folder
-os.chdir("vendor/domain-pfp")
-# Domain-PFP prediction command
-output_file = os.path.join(output_folder, "domain_pfp_predictions.tsv")
-cmd = f"""python3 predict_functions.py --fasta {input_file} --outfile {output_file} --blast_flag --diamond_path {diamond_path}"""
-os.system(cmd)
-os.chdir("../..")  # Go back to the original directory
+# ----------------- Domain-PFP Section -----------------
+print("\n[STEP] Running Domain-PFP predictions...")
 
-########## FunFams ##################
+domain_pfp_dir = Path("vendor/domain-pfp")
+domain_pfp_output = output_folder / "domain_pfp_predictions.tsv"
+
+cmd = (
+    f"python3 predict_functions.py "
+    f"--fasta {input_file} "
+    f"--outfile {domain_pfp_output} "
+    f"--blast_flag --diamond_path {diamond_path}"
+)
+
+if domain_pfp_dir.exists():
+    run_command(cmd, cwd=domain_pfp_dir)
+else:
+    print(f"[WARNING] Domain-PFP directory {domain_pfp_dir} not found. Skipping.")
+
+# ----------------- FunFams Section -----------------
+print("\n[STEP] Running FunFams predictions...")
+
+funfams_script = Path("vendor/funfams/apps/cath-genomescan.pl")
+funfams_hmm_lib = Path("data/funfam-hmm3-v4_3_0.lib")
+
+if funfams_script.exists() and funfams_hmm_lib.exists():
+    cmd = f"{funfams_script} -i {input_file} -l {funfams_hmm_lib} -o {output_folder}"
+    run_command(cmd)
+else:
+    print(f"[WARNING] Missing FunFams script or HMM library. Skipping.")
+
+print("\n[INFO] All predictions complete. Results saved in:", output_folder.resolve())
 
 
 
