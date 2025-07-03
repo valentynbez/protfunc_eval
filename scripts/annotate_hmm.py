@@ -34,16 +34,19 @@ def write_intermediate(results: List[Result], outfile: str) -> None:
     Returns:
         None
     """
-    with open(outfile, "a") as outfile_buffer:
-        # get  best results for each protein
-        best_results = {}
-        keep_protein = set()
+    with open(outfile, "w") as outfile_buffer:
+        # get FunFams mapping file 
+        fun_fams_mapping_file = os.path.join(
+            os.path.dirname(__file__), "../data/funfam_mapping.tsv"
+        )
+        with open(fun_fams_mapping_file, "r") as mapping_file:
+            go_tuples = [
+                line.strip().split("\t") for line in mapping_file.readlines()
+            ]
+
         for result in results:
-            # write all results 
-            outfile_buffer.write(
-                f"{result.protein}\t{result.name}\t{result.bitscore}\t{result.evalue}\t"
-                f"{result.protein_length}\t{result.domain_accession}\t{result.start}\t{result.end}\n"
-            )
+             protein_name = result.protein
+                if result.name in go_tuples:
 
 
 def annotate_fasta(

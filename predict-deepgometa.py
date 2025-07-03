@@ -63,5 +63,14 @@ cmd = f"""python3 predict_functions.py --fasta {input_file} --outfile {output_fi
 os.system(cmd)
 os.chdir("../..")  # Go back to the original directory
 
+########## FunFams ##################
 
+
+
+# emapper.py
+#     -i /nfs/cds-peta/exports/biol_micro_cds_gr_sunagawa/scratch/vbezshapkin/protfunc_eval/data/example.fa \
+#     -o /nfs/cds-peta/exports/biol_micro_cds_gr_sunagawa/scratch/vbezshapkin/protfunc_eval/predictions \
+#     --cpu 32 \
+#     --data_dir /nfs/nas22/fs2202/biol_micro_sunagawa/Projects/EAN/PROPHAGE_REFSEQ_EAN/scratch/databases \
+#     --sensmode ultra-sensitive --override
 
