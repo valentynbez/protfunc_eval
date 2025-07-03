@@ -9,7 +9,7 @@
 	url = https://github.com/kiharalab/Domain-PFP
 [submodule "funfams"]
 	path = vendor/funfams
-	url = https://github.com/UCLOrengoGroup/cath-tools-genomescan
+	url = https://github.com/valentynbez/cath-tools-genomescan
 [submodule "po2go"]
 	path = vendor/po2go
 	url = https://github.com/valentynbez/protein-annotation
