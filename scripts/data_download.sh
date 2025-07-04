@@ -7,22 +7,22 @@ mkdir -p data
 # deepgo2 
 wget https://deepgo.cbrc.kaust.edu.sa/data/deepgo2/data.tar.gz
 # unpack into deepgo2/data
-tar -xzf data.tar.gz -C deepgo2/data
+mkdir -p vendor/deepgo2/data
+tar -xzf data.tar.gz -C vendor/deepgo2/data
 rm data.tar.gz
 
 # deepgometa
 wget https://deepgo.cbrc.kaust.edu.sa/data/deepgometa/data.tar.gz
 # unpack into deepgometa/data
-tar -xzf data.tar.gz -C deepgometa/data
+mkdir -p vendor/deepgometa/data
+tar -xzf data.tar.gz -C vendor/deepgometa/data
 rm data.tar.gz
-
-python download_eggnog_data.py --data_dir data
 
 # download funfams hmms 
 wget http://download.cathdb.info/cath/releases/all-releases/v4_3_0/sequence-data/funfam-hmm3-v4_3_0.lib.gz
 # extract to data directory
 gunzip -c funfam-hmm3-v4_3_0.lib.gz > data/funfam-hmm3-v4_3_0.lib 
-# check and move hmmsearch to a proper place
+# check and move hmmsearch to a proper place within funfams directory
 HMMSEARCH_PATH=$(which hmmsearch)
 mkdir -p vendor/funfams/bin/hmmer3
 if [ -z "$HMMSEARCH_PATH" ]; then

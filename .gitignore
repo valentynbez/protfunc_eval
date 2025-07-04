@@ -1,4 +1,7 @@
 data/funfam-hmm3-v4_3_0.lib
+data/go.obo
+data/model_best.pth.tar
+data/terms_annotated_embeddings.pkl
 predictions
 *~
 
