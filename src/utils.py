@@ -1,6 +1,7 @@
 import gzip
 from collections import defaultdict
 from pathlib import Path
+import gzip
 
 # # Paths
 # cath_file = "/nfs/cds-peta/exports/biol_micro_cds_gr_sunagawa/scratch/vbezshapkin/protfunc_eval/predictions/example.crh"

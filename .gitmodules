@@ -7,12 +7,15 @@
 [submodule "domain-pfp"]
 	path = vendor/domain-pfp
 	url = https://github.com/valentynbez/Domain-PFP
+	branch = main
 [submodule "funfams"]
 	path = vendor/funfams
 	url = https://github.com/valentynbez/cath-tools-genomescan
+	branch = main
 [submodule "po2go"]
 	path = vendor/po2go
 	url = https://github.com/valentynbez/protein-annotation
+	branch = main
 [submodule "msrep"]
 	path = vendor/msrep
 	url = https://github.com/luo-group/MSRep
