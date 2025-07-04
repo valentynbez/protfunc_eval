@@ -15,7 +15,7 @@ Tools are built in a very messy way, it is what it is. **Please, do not rename e
 ### 2.1. `deepgometa` data 
 - Run script `data_download.sh` 
 - Might take a very, very long time.
-- Also downloads data for `FunFams`, `Domain-PFP`, `DeepGOMeta`, `DeepGO2`, `MSRep` 
+- Also downloads data for `FunFams`, `DeepGOMeta`, `DeepGO2`, `eggnog-mapper`
 
 ### 2.2. `po2go` data
 - go to a [Google Drive](https://drive.google.com/drive/folders/1P4ExHz0iFCXq5kwRqmAG8XXNZAvoQcX5) and download manually
