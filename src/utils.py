@@ -1,7 +1,7 @@
 import gzip
 from collections import defaultdict
 from pathlib import Path
-import gzip
+import re
 
 # # Paths
 # cath_file = "/nfs/cds-peta/exports/biol_micro_cds_gr_sunagawa/scratch/vbezshapkin/protfunc_eval/predictions/example.crh"
@@ -10,6 +10,40 @@ import gzip
 
 # # Run processing
 # process_cath_hits(cath_file, mapping_file, output_file)
+
+
+def process_emapper(raw_result: str, output_file: str):
+    with open(raw_result, "r") as infile, open(output_file, "w") as outfile:
+        for line in infile:
+            if line.startswith("#"):
+                continue
+            else:
+                # GO is a 10th column
+                columns = line.strip().split("\t")
+                protein_name = columns[0]
+                go_terms = columns[9].split(",")
+                for term in go_terms:
+                    outfile.write(f"{protein_name}\t{term}\t1\n")
+
+
+
+def process_po2go(raw_result: str, output_file: str):
+    """
+    Process the output from PO2GO predictions and extract GO terms.
+    Args:
+        infile (str): Path to the raw PO2GO output file.
+        output_file (str): Path to the final output file.
+    """
+
+    go_pattern = re.compile(r"GO:\d{7}")
+    with open(raw_result, "r") as infile, open(output_file, "w") as outfile:
+        next(infile)  # Skip header
+        for line in infile:
+            _, prot_name, go_terms = line.strip().split(",", 2)
+            go_terms = go_pattern.findall(go_terms)
+            for term in go_terms:
+                outfile.write(f"{prot_name}\t{term}\t1\n")
+
 
 def load_funfam_go_mapping(mapping_file: Path) -> dict[str, list[str]]:
     """

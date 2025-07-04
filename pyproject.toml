@@ -1,0 +1,19 @@
+[project]
+name = "protfunc_eval"
+version = "0.1.0"
+description = "Protein function evaluation tools"
+authors = [
+    { name="Your Name", email="your.email@example.com" }
+]
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+dependencies = [
+]
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project.scripts]
+predict-go = "predict_go:main"
