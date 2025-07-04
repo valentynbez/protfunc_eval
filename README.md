@@ -26,7 +26,7 @@ In the root of the repository run:
 pip install -e . 
 ```
 
-## 3. Run `predict-go`
+## 3. Run `predict-go -i {input_file} -o {output_file}`
 - since the only software that doesn't work within `deepgometa` environment is eggnog-mapper, this was unelegantly hacked with `conda run -n [cmd]`
 - the script produces predictions from following tools
     - DeepGOMeta

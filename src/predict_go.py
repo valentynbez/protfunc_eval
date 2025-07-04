@@ -5,6 +5,8 @@ import subprocess
 from pathlib import Path
 import gzip
 from parsers import process_cath_hits, process_po2go, process_emapper
+from Bio import SeqIO
+import argparse
 
 
 def run_command(cmd, cwd=None):
@@ -47,14 +49,26 @@ def move_and_concat_prediction_files(source_dir: Path, tool_name: str, output_fo
 
 def main():
     # user input
-    input_file = Path(
-        "/nfs/cds-peta/exports/biol_micro_cds_gr_sunagawa/scratch/vbezshapkin/protfunc_eval/data/example.fa"
-    ).resolve()
-    output_folder = Path("predictions").resolve()
+    parser = argparse.ArgumentParser(
+        description="Run protein function prediction using DeepGO, Domain-PFP, FunFams, PO2GO, and eggNOG-mapper."
+    )
+    parser.add_argument(
+        "-i", "--input", required=True, type=Path, help="Path to input FASTA file"
+    )
+    parser.add_argument(
+        "-o", "--output", required=True, type=Path, help="Path to output directory"
+    )
+    parser.add_argument(
+        "-t", "--threads", default=8, type=int, help="Number of CPU threads to use (default: 8)"
+    )
+    args = parser.parse_args()
+
+    input_file = args.input.resolve()
+    output_folder = args.output.resolve()
+    threads = args.threads
 
     # stable output paths
     intermediate_folder = output_folder / "intermediate"
-    domain_pfp_output = intermediate_folder / "domain_pfp_go_preds.csv"
     po2go_output = intermediate_folder / "po2go_go_preds.csv"
     po2go_final = output_folder / "po2go_go_preds.tsv"
     threads = 16
@@ -101,26 +115,40 @@ def main():
         # Move predictions to output folder
         move_and_concat_prediction_files(input_file.parent, name, output_folder)
 
-    # # ----------------- Domain-PFP Section ----------------- BROKEN!
-    # print("[STEP] Running Domain-PFP predictions...")
+    # # ----------------- Domain-PFP Section ----------------- 
+    print("[STEP] Running Domain-PFP predictions...")
 
-    # domain_pfp_dir = Path("vendor/domain-pfp")
-    # cmd = (
-    #     f"python3 predict_functions.py "
-    #     f"--fasta {input_file} "
-    #     f"--outfile {domain_pfp_output} "
-    #     f"--blast_flag --diamond_path {diamond_path}"
-    # )
+    # open input file and split into single sequences
+    with open(input_file, "r") as infile:
+        headers, sequences = [], []
+        for record in SeqIO.parse(infile, "fasta"):
+            headers.append(record.id)
+            sequences.append(str(record.seq))
+        for header, seq in zip(headers, sequences):
+            with open(f"predictions/intermediate/{header}.fa", "w") as outfile:
+                outfile.write(f">{header}\n{seq}\n")
 
-    # if domain_pfp_dir.exists():
-    #     run_command(cmd, cwd=domain_pfp_dir)
-    # else:
-    #     print(f"[WARNING] Domain-PFP directory {domain_pfp_dir} not found. Skipping.")
-    # # Open output csv and rewrite as tsv
-    # with open(domain_pfp_output, "r") as infile, open(output_folder / "domain_pfp_go_preds.tsv", "w") as outfile:
-    #     for line in infile:
-    #         outfile.write(line.replace(",", "\t"))
+    domain_pfp_dir = Path("vendor/domain-pfp")
+    inputs = intermediate_folder.glob("*.fa")
+    for input_seq in inputs:
+        domain_pfp_output = intermediate_folder / f"{input_seq.stem}_domain_pfp_go_preds.csv"
+        cmd = (
+            f"python3 predict_functions.py "
+            f"--fasta {input_seq} "
+            f"--outfile {domain_pfp_output} "
+            f"--blast_flag --diamond_path {diamond_path}"
+        )
+        run_command(cmd, cwd=domain_pfp_dir)
 
+    intermediate_preds = intermediate_folder.glob("*domain_pfp_go_preds.csv")
+    with open(output_folder / "domain_pfp_go_preds.tsv", "w") as outfile:
+        for pred_file in intermediate_preds:
+            protein_id = pred_file.stem.split('_')[0]
+            with open(pred_file, "r") as infile:
+                next(infile)  # Skip header
+                for line in infile:
+                    tsv_line = line.strip().replace(",", "\t")
+                    outfile.write(f"{protein_id}\t{tsv_line}\n")
 
     # ----------------- FunFams Section -----------------
     print("[STEP] Running FunFams predictions...")
