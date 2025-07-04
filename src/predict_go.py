@@ -61,6 +61,11 @@ def main():
     parser.add_argument(
         "-t", "--threads", default=8, type=int, help="Number of CPU threads to use (default: 8)"
     )
+    parser.add_argument("--po2go_terms_file", type=Path, default=Path("data/terms_annotated_embeddings.pkl"),
+                        help="Path to PO2GO terms file (default: data/terms_annotated_embeddings.pkl)")
+    parser.add_argument("--po2go_model", type=Path, default=Path("data/model_best.pth.tar"),
+                        help="Path to PO2GO model file (default: data/model_best.pth.tar)")
+    
     args = parser.parse_args()
 
     input_file = args.input.resolve()
@@ -172,8 +177,9 @@ def main():
         f"python vendor/po2go/inference_fasta_cpu.py "
         f"-i {input_file} "
         f"-o {po2go_output} "
-        f"--terms-file data/terms_annotated_embeddings.pkl "
-        f"--resume data/model_best.pth.tar -T {threads}"
+        f"--terms-file {args.po2go_terms_file} "
+        f"--resume {args.po2go_model} "
+        f"-T {threads}"
     )
     run_command(cmd)
     
