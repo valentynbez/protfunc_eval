@@ -4,7 +4,7 @@ import sys
 import subprocess
 from pathlib import Path
 import gzip
-from utils import process_cath_hits, process_po2go, process_emapper
+from parsers import process_cath_hits, process_po2go, process_emapper
 
 
 def run_command(cmd, cwd=None):

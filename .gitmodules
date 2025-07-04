@@ -16,6 +16,3 @@
 	path = vendor/po2go
 	url = https://github.com/valentynbez/protein-annotation
 	branch = main
-[submodule "msrep"]
-	path = vendor/msrep
-	url = https://github.com/luo-group/MSRep

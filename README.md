@@ -31,7 +31,6 @@ pip install -e .
 - the script produces predictions from following tools
     - DeepGOMeta
     - DeepGO2
-    - MSRep
     - FunFams
     - PO2GO
     - eggnog-mapper (v2.1.13) 
